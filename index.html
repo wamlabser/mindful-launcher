@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Mindful" />
+  <meta name="theme-color" content="#ffffff" />
+  <title>Mindful Launcher</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --accent: #639922;
+      --accent-light: #EAF3DE;
+      --accent-dark: #27500A;
+      --red: #E24B4A;
+      --red-light: #FCEBEB;
+      --red-dark: #501313;
+      --amber: #BA7517;
+      --amber-light: #FAEEDA;
+      --amber-dark: #412402;
+      --bg: #ffffff;
+      --bg-secondary: #f5f5f3;
+      --bg-tertiary: #efefec;
+      --text: #1a1a18;
+      --text-secondary: #6b6b67;
+      --border: rgba(0,0,0,0.12);
+      --border-med: rgba(0,0,0,0.22);
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --font: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1c1c1e;
+        --bg-secondary: #2c2c2e;
+        --bg-tertiary: #3a3a3c;
+        --text: #f2f2f7;
+        --text-secondary: #8e8e93;
+        --border: rgba(255,255,255,0.12);
+        --border-med: rgba(255,255,255,0.22);
+        --accent-light: #1a2e0a;
+        --accent-dark: #a8d870;
+        --red-light: #2c1010;
+        --red-dark: #ff6b6b;
+        --amber-light: #2c1e00;
+        --amber-dark: #fbbf24;
+      }
+    }
+
+    html, body {
+      height: 100%;
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      -webkit-tap-highlight-color: transparent;
+      overflow: hidden;
+    }
+
+    .app {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      height: -webkit-fill-available;
+      max-width: 430px;
+      margin: 0 auto;
+    }
+
+    /* HEADER */
+    .header {
+      padding: 52px 20px 14px;
+      border-bottom: 0.5px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+      background: var(--bg);
+    }
+    .header-title { font-size: 20px; font-weight: 600; color: var(--text); }
+    .header-sub { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+    .streak-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: var(--accent-light); color: var(--accent-dark);
+      font-size: 11px; font-weight: 600; padding: 4px 10px;
+      border-radius: 20px;
+    }
+
+    /* NAV */
+    .nav {
+      display: flex;
+      border-bottom: 0.5px solid var(--border);
+      background: var(--bg);
+      flex-shrink: 0;
+    }
+    .nav-btn {
+      flex: 1; padding: 12px 6px; font-size: 12px; font-weight: 500;
+      color: var(--text-secondary); background: transparent;
+      border: none; cursor: pointer;
+      border-bottom: 2px solid transparent;
+      font-family: var(--font);
+      transition: all 0.15s;
+    }
+    .nav-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+    /* CONTENT */
+    .content { flex: 1; overflow-y: auto; padding: 16px 20px 40px; -webkit-overflow-scrolling: touch; }
+    .section { display: none; }
+    .section.active { display: block; }
+
+    /* STAT GRID */
+    .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+    .stat-card { background: var(--bg-secondary); border-radius: var(--radius-md); padding: 14px; }
+    .stat-label { font-size: 10px; color: var(--text-secondary); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .stat-value { font-size: 28px; font-weight: 600; color: var(--text); }
+    .stat-sub { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+
+    .section-title { font-size: 11px; font-weight: 600; color: var(--text-secondary); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* APP ROW */
+    .app-row {
+      background: var(--bg);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 12px 14px;
+      margin-bottom: 10px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .app-emoji {
+      font-size: 22px; width: 42px; height: 42px;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--accent-light); border-radius: var(--radius-md);
+      flex-shrink: 0;
+    }
+    .app-emoji.wl { background: var(--bg-secondary); }
+    .app-info { flex: 1; min-width: 0; }
+    .app-name { font-size: 14px; font-weight: 500; color: var(--text); }
+    .app-meta { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+    .app-opens { text-align: right; flex-shrink: 0; }
+    .opens-count { font-size: 22px; font-weight: 600; color: var(--accent); }
+    .opens-count.wl { color: var(--text-secondary); }
+    .opens-label { font-size: 10px; color: var(--text-secondary); }
+
+    /* BAR CHART */
+    .bar-chart { margin-top: 8px; }
+    .bar-row { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+    .bar-day { font-size: 10px; color: var(--text-secondary); width: 24px; flex-shrink: 0; }
+    .bar-track { flex: 1; height: 5px; background: var(--bg-secondary); border-radius: 3px; overflow: hidden; }
+    .bar-fill { height: 100%; background: var(--accent); border-radius: 3px; }
+    .bar-num { font-size: 10px; color: var(--text-secondary); width: 14px; text-align: right; flex-shrink: 0; }
+
+    /* BADGES */
+    .wl-badge { font-size: 10px; padding: 2px 7px; border-radius: 10px; font-weight: 500; background: var(--bg-secondary); color: var(--text-secondary); }
+
+    /* FORM */
+    .add-form {
+      background: var(--bg);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 16px; margin-bottom: 18px;
+    }
+    .add-form label { font-size: 11px; color: var(--text-secondary); display: block; margin-bottom: 5px; }
+    .add-form input, .add-form select {
+      width: 100%; padding: 9px 12px; font-size: 14px;
+      border: 0.5px solid var(--border-med);
+      border-radius: var(--radius-md);
+      background: var(--bg-secondary);
+      color: var(--text);
+      margin-bottom: 12px;
+      font-family: var(--font);
+      -webkit-appearance: none;
+    }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .add-btn {
+      width: 100%; padding: 11px; font-size: 14px; font-weight: 600;
+      background: var(--accent); color: white; border: none;
+      border-radius: var(--radius-md); cursor: pointer;
+      font-family: var(--font);
+    }
+
+    /* WATCH ROW */
+    .watch-row {
+      background: var(--bg); border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg); padding: 12px 14px;
+      margin-bottom: 8px; display: flex; align-items: center; gap: 10px;
+    }
+    .watch-info { flex: 1; }
+    .watch-name { font-size: 14px; font-weight: 500; color: var(--text); }
+    .watch-meta { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+    .icon-btn {
+      width: 32px; height: 32px; border-radius: var(--radius-md);
+      border: 0.5px solid var(--border); background: var(--bg-secondary);
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      font-size: 14px; color: var(--text-secondary); font-family: var(--font);
+    }
+    .icon-btn.del { color: var(--red); }
+    .wl-toggle {
+      padding: 0 10px; height: 30px; font-size: 11px; font-weight: 500;
+      border-radius: var(--radius-md); border: 0.5px solid var(--border-med);
+      cursor: pointer; font-family: var(--font); white-space: nowrap;
+    }
+    .wl-toggle.on { background: var(--bg-secondary); color: var(--text-secondary); }
+    .wl-toggle.off { background: var(--accent-light); color: var(--accent-dark); border-color: var(--accent); }
+
+    /* SHORTCUT CARDS */
+    .shortcut-card {
+      background: var(--bg); border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg); padding: 16px; margin-bottom: 12px;
+    }
+    .shortcut-title { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+    .step-item { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 8px; font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+    .step-num {
+      width: 18px; height: 18px; border-radius: 50%;
+      background: var(--accent-light); color: var(--accent-dark);
+      font-size: 10px; font-weight: 600; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 1px;
+    }
+    .url-box {
+      font-size: 10px; background: var(--bg-secondary); padding: 10px;
+      border-radius: var(--radius-md); margin-top: 6px;
+      word-break: break-all; color: var(--text);
+      font-family: 'SF Mono', Menlo, monospace; line-height: 1.6;
+    }
+    .copy-btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 8px 14px; font-size: 12px; font-weight: 500;
+      border: 0.5px solid var(--border-med); border-radius: var(--radius-md);
+      background: var(--bg-secondary); color: var(--text);
+      cursor: pointer; margin-top: 10px; font-family: var(--font);
+    }
+
+    /* DEMO BTN */
+    .demo-btn {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%; padding: 12px; border: 0.5px solid var(--accent);
+      border-radius: var(--radius-md); background: var(--accent-light);
+      color: var(--accent-dark); font-size: 13px; font-weight: 500;
+      cursor: pointer; margin-top: 16px; font-family: var(--font);
+    }
+
+    .empty-state { text-align: center; padding: 48px 20px; color: var(--text-secondary); font-size: 13px; }
+    .empty-icon { font-size: 36px; margin-bottom: 12px; }
+
+    /* INFO BOX */
+    .info-box {
+      background: var(--accent-light); border-radius: var(--radius-md);
+      padding: 12px 14px; font-size: 12px; color: var(--accent-dark);
+      margin-bottom: 16px; line-height: 1.6;
+    }
+
+    /* MODAL */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.6); z-index: 200;
+      align-items: flex-end; justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--bg); border-radius: 20px 20px 0 0;
+      padding: 20px 20px 48px; width: 100%; max-width: 430px;
+      animation: slideUp 0.22s ease;
+    }
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    .modal-handle { width: 36px; height: 4px; background: var(--border-med); border-radius: 2px; margin: 0 auto 20px; }
+    .modal-question { font-size: 19px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+    .modal-sub { font-size: 13px; color: var(--text-secondary); margin-bottom: 18px; }
+    .modal-app-row {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 18px; padding: 12px;
+      background: var(--bg-secondary); border-radius: var(--radius-md);
+    }
+    .modal-app-name { font-size: 15px; font-weight: 500; color: var(--text); }
+    .modal-app-opens { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+
+    .btn-primary {
+      width: 100%; padding: 15px; font-size: 15px; font-weight: 600;
+      background: var(--accent); border: none;
+      border-radius: var(--radius-md); color: white;
+      cursor: pointer; margin-bottom: 10px; font-family: var(--font);
+    }
+    .btn-danger {
+      width: 100%; padding: 15px; font-size: 15px; font-weight: 600;
+      background: var(--red-light); border: none;
+      border-radius: var(--radius-md); color: var(--red-dark);
+      cursor: pointer; margin-bottom: 10px; font-family: var(--font);
+    }
+    .btn-secondary {
+      width: 100%; padding: 15px; font-size: 15px; font-weight: 500;
+      background: transparent; border: 0.5px solid var(--border-med);
+      border-radius: var(--radius-md); color: var(--text-secondary);
+      cursor: pointer; font-family: var(--font);
+    }
+
+    /* DURATION PICKER */
+    .duration-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 14px; }
+    .dur-opt {
+      padding: 12px 6px; text-align: center; font-size: 14px; font-weight: 500;
+      border: 0.5px solid var(--border-med); border-radius: var(--radius-md);
+      background: var(--bg-secondary); color: var(--text);
+      cursor: pointer; font-family: var(--font);
+    }
+    .dur-opt small { display: block; font-size: 10px; color: var(--text-secondary); font-weight: 400; margin-top: 2px; }
+    .dur-opt.sel, .dur-opt:active { border-color: var(--red); color: var(--red-dark); background: var(--red-light); }
+    .dur-opt.sel small { color: var(--red-dark); }
+
+    .custom-dur {
+      display: flex; align-items: center; gap: 8px; margin-bottom: 16px;
+      background: var(--bg-secondary); border-radius: var(--radius-md); padding: 10px 14px;
+    }
+    .custom-dur label { font-size: 12px; color: var(--text-secondary); flex-shrink: 0; }
+    .custom-dur input {
+      width: 54px; padding: 6px 8px; font-size: 15px; font-weight: 600;
+      border: 0.5px solid var(--border-med); border-radius: var(--radius-md);
+      background: var(--bg); color: var(--text); text-align: center;
+      font-family: var(--font);
+    }
+    .custom-dur span { font-size: 13px; color: var(--text-secondary); }
+
+    .warning-banner {
+      background: var(--amber-light); border: 0.5px solid var(--amber);
+      border-radius: var(--radius-md); padding: 10px 12px;
+      font-size: 12px; color: var(--amber-dark); margin-bottom: 14px; line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+
+<div class="app">
+  <div class="header">
+    <div>
+      <div class="header-title">Mindful Launcher</div>
+      <div class="header-sub" id="today-date"></div>
+    </div>
+    <div class="streak-badge">🌿 <span id="streak-val">0</span> Tage</div>
+  </div>
+
+  <nav class="nav">
+    <button class="nav-btn active" onclick="switchTab('dashboard',this)">Dashboard</button>
+    <button class="nav-btn" onclick="switchTab('apps',this)">Apps</button>
+    <button class="nav-btn" onclick="switchTab('shortcuts',this)">Shortcuts</button>
+  </nav>
+
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <div id="tab-dashboard" class="section active">
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-label">Heute geöffnet</div>
+          <div class="stat-value" id="total-opens">0</div>
+          <div class="stat-sub">Öffnungen gesamt</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Blockiert</div>
+          <div class="stat-value" id="total-blocked">0</div>
+          <div class="stat-sub">mal heute</div>
+        </div>
+      </div>
+      <div class="section-title">App-Übersicht</div>
+      <div id="dashboard-list"></div>
+      <button class="demo-btn" onclick="triggerDemo()">Demo: App-Öffnung simulieren</button>
+    </div>
+
+    <!-- APPS -->
+    <div id="tab-apps" class="section">
+      <div class="add-form">
+        <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:14px;">App hinzufügen</div>
+        <label>App-Name</label>
+        <input type="text" id="new-name" placeholder="z.B. WhatsApp" autocorrect="off" />
+        <div class="form-row">
+          <div>
+            <label>Emoji</label>
+            <input type="text" id="new-emoji" placeholder="💬" maxlength="2" />
+          </div>
+          <div>
+            <label>URL-Scheme</label>
+            <input type="text" id="new-scheme" placeholder="whatsapp://" autocorrect="off" autocapitalize="none" />
+          </div>
+        </div>
+        <label>Max. Öffnungen pro Tag</label>
+        <input type="number" id="new-max" value="10" min="1" max="99" />
+        <button class="add-btn" onclick="addApp()">Hinzufügen</button>
+      </div>
+
+      <div class="info-box">
+        💡 <strong>Whitelist:</strong> Apps auf der Whitelist werden nicht abgefragt – nützlich für Apps die du immer bewusst öffnest (z.B. Spotify, Maps).
+      </div>
+
+      <div class="section-title">Überwachte Apps</div>
+      <div id="apps-list"></div>
+    </div>
+
+    <!-- SHORTCUTS -->
+    <div id="tab-shortcuts" class="section">
+      <div class="info-box">
+        ⚡ <strong>Einmalig einrichten:</strong> Füge für jede App eine Automation in der Shortcuts-App ein. Danach wirst du automatisch gefragt, bevor die App öffnet.
+      </div>
+      <div id="shortcuts-list"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="main-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+const SK = { APPS:'ml_apps', LOGS:'ml_logs', STREAK:'ml_streak' };
+function load(k,d){ try{ return JSON.parse(localStorage.getItem(k))||d; }catch{ return d; } }
+function save(k,v){ localStorage.setItem(k,JSON.stringify(v)); }
+
+let apps = load(SK.APPS, [
+  { id:'wa', name:'WhatsApp', emoji:'💬', scheme:'whatsapp://', maxOpens:10, whitelisted:false },
+  { id:'ig', name:'Instagram', emoji:'📸', scheme:'instagram://', maxOpens:5, whitelisted:false },
+  { id:'tw', name:'X / Twitter', emoji:'🐦', scheme:'twitter://', maxOpens:5, whitelisted:false }
+]);
+let logs = load(SK.LOGS, []);
+let streakData = load(SK.STREAK, { count:0, lastDate:'' });
+
+const todayKey = () => new Date().toISOString().split('T')[0];
+let currentApp = null;
+let selectedMins = 15;
+
+function cleanLogs(){ logs = logs.filter(l => l.date === todayKey()); save(SK.LOGS, logs); }
+function getTodayLogs(id){ return logs.filter(l => l.appId===id && l.date===todayKey()); }
+
+function getWeekData(id){
+  const out = [];
+  for(let i=6;i>=0;i--){
+    const d = new Date(); d.setDate(d.getDate()-i);
+    const k = d.toISOString().split('T')[0];
+    out.push({ label:['So','Mo','Di','Mi','Do','Fr','Sa'][d.getDay()], count: logs.filter(l=>l.appId===id&&l.date===k).length });
+  }
+  return out;
+}
+
+function renderDashboard(){
+  cleanLogs();
+  let opens=0, blocked=0, html='';
+  if(!apps.length){
+    html='<div class="empty-state"><div class="empty-icon">📱</div>Füge Apps unter "Apps" hinzu</div>';
+  }
+  apps.forEach(app=>{
+    const tl=getTodayLogs(app.id);
+    const o=tl.length, b=tl.filter(l=>l.blocked).length;
+    opens+=o; blocked+=b;
+    const week=getWeekData(app.id);
+    const mx=Math.max(...week.map(d=>d.count),1);
+    const bars=week.map(d=>`<div class="bar-row"><span class="bar-day">${d.label}</span><div class="bar-track"><div class="bar-fill" style="width:${Math.round(d.count/mx*100)}%"></div></div><span class="bar-num">${d.count}</span></div>`).join('');
+    const wlBadge=app.whitelisted?'<span class="wl-badge">Whitelist</span>':'';
+    html+=`<div class="app-row">
+      <div class="app-emoji${app.whitelisted?' wl':''}">${app.emoji}</div>
+      <div class="app-info">
+        <div class="app-name">${app.name} ${wlBadge}</div>
+        <div class="app-meta">${b} blockiert · max ${app.maxOpens}/Tag</div>
+        <div class="bar-chart">${bars}</div>
+      </div>
+      <div class="app-opens">
+        <div class="opens-count${app.whitelisted?' wl':''}">${o}</div>
+        <div class="opens-label">heute</div>
+      </div>
+    </div>`;
+  });
+  document.getElementById('dashboard-list').innerHTML=html;
+  document.getElementById('total-opens').textContent=opens;
+  document.getElementById('total-blocked').textContent=blocked;
+  document.getElementById('streak-val').textContent=streakData.count;
+}
+
+function renderApps(){
+  const list=document.getElementById('apps-list');
+  if(!apps.length){ list.innerHTML='<div class="empty-state"><div class="empty-icon">➕</div>Noch keine Apps hinzugefügt</div>'; return; }
+  list.innerHTML=apps.map(app=>`
+    <div class="watch-row">
+      <div style="font-size:22px;width:36px;text-align:center;">${app.emoji}</div>
+      <div class="watch-info">
+        <div class="watch-name">${app.name}</div>
+        <div class="watch-meta">${app.scheme||'Kein URL-Scheme'} · max ${app.maxOpens}x/Tag</div>
+      </div>
+      <button class="wl-toggle ${app.whitelisted?'on':'off'}" onclick="toggleWhitelist('${app.id}')">${app.whitelisted?'Whitelist ✓':'Bewacht'}</button>
+      <button class="icon-btn del" onclick="deleteApp('${app.id}')">✕</button>
+    </div>`).join('');
+}
+
+function renderShortcuts(){
+  const list=document.getElementById('shortcuts-list');
+  if(!apps.length){ list.innerHTML='<div class="empty-state"><div class="empty-icon">⚡</div>Keine Apps konfiguriert</div>'; return; }
+  const base=window.location.href.split('?')[0];
+  list.innerHTML=apps.filter(a=>!a.whitelisted).map(app=>{
+    const url=`${base}?app=${encodeURIComponent(app.id)}&name=${encodeURIComponent(app.name)}&emoji=${encodeURIComponent(app.emoji)}`;
+    return `<div class="shortcut-card">
+      <div class="shortcut-title">${app.emoji} ${app.name}</div>
+      <div class="step-item"><div class="step-num">1</div><span>Shortcuts App öffnen → Automation → + → App → "${app.name}" wählen → "Wird geöffnet"</span></div>
+      <div class="step-item"><div class="step-num">2</div><span>Aktion: "URL öffnen" → diese URL einfügen (kopieren):</span></div>
+      <div class="url-box">${url}</div>
+      <div class="step-item" style="margin-top:8px;"><div class="step-num">3</div><span>"Sofort ausführen" aktivieren (kein Bestätigungsdialog von Shortcuts selbst)</span></div>
+      <button class="copy-btn" onclick="copyUrl('${url}',this)">📋 URL kopieren</button>
+    </div>`;
+  }).join('');
+  const wl=apps.filter(a=>a.whitelisted);
+  if(wl.length){
+    list.innerHTML+=`<div class="section-title" style="margin-top:20px;">Whitelist – kein Shortcut nötig</div>`+
+    wl.map(a=>`<div class="watch-row"><div style="font-size:20px;width:32px;text-align:center;">${a.emoji}</div><div class="watch-info"><div class="watch-name">${a.name}</div><div class="watch-meta">Wird nicht abgefragt</div></div></div>`).join('');
+  }
+}
+
+function addApp(){
+  const name=document.getElementById('new-name').value.trim();
+  if(!name) return;
+  const emoji=document.getElementById('new-emoji').value.trim()||'📱';
+  const scheme=document.getElementById('new-scheme').value.trim();
+  const maxOpens=parseInt(document.getElementById('new-max').value)||10;
+  const id=name.toLowerCase().replace(/\s+/g,'-')+'-'+Date.now();
+  apps.push({id,name,emoji,scheme,maxOpens,whitelisted:false});
+  save(SK.APPS,apps);
+  document.getElementById('new-name').value='';
+  document.getElementById('new-emoji').value='';
+  document.getElementById('new-scheme').value='';
+  renderApps(); renderShortcuts(); renderDashboard();
+}
+
+function deleteApp(id){ apps=apps.filter(a=>a.id!==id); save(SK.APPS,apps); renderApps(); renderShortcuts(); renderDashboard(); }
+
+function toggleWhitelist(id){
+  const app=apps.find(a=>a.id===id);
+  if(app){ app.whitelisted=!app.whitelisted; save(SK.APPS,apps); renderApps(); renderDashboard(); }
+}
+
+function openModal(app){
+  currentApp=app; selectedMins=15;
+  const tl=getTodayLogs(app.id);
+  showScreen1(tl.length, tl.length>=app.maxOpens);
+  document.getElementById('main-modal').classList.add('open');
+}
+
+function showScreen1(opens, overLimit){
+  const app=currentApp;
+  document.getElementById('modal-body').innerHTML=`
+    <div class="modal-question">Wirklich öffnen?</div>
+    <div class="modal-sub">Du wolltest ${app.name} öffnen.</div>
+    <div class="modal-app-row">
+      <div style="font-size:28px;">${app.emoji}</div>
+      <div>
+        <div class="modal-app-name">${app.name}</div>
+        <div class="modal-app-opens">${opens} von ${app.maxOpens} Öffnungen heute</div>
+      </div>
+    </div>
+    ${overLimit?`<div class="warning-banner">⚠️ Tageslimit erreicht – du hast ${app.name} heute schon ${opens}x geöffnet. Streak geht verloren.</div>`:''}
+    <button class="btn-primary" onclick="confirmOpen()">Ja, öffnen</button>
+    <button class="btn-danger" onclick="showScreen2()">Nein – blockieren</button>
+    <button class="btn-secondary" onclick="closeModal()">Abbrechen</button>`;
+}
+
+function showScreen2(){
+  document.getElementById('modal-body').innerHTML=`
+    <div class="modal-question">Wie lange blockieren?</div>
+    <div class="modal-sub" style="margin-bottom:16px;">Wähle eine Dauer oder gib eine eigene ein (max. 23h 59min).</div>
+    <div class="duration-grid">
+      <div class="dur-opt" onclick="selectDur(5,this)">5<small>Min</small></div>
+      <div class="dur-opt sel" onclick="selectDur(15,this)">15<small>Min</small></div>
+      <div class="dur-opt" onclick="selectDur(30,this)">30<small>Min</small></div>
+      <div class="dur-opt" onclick="selectDur(60,this)">1<small>Stunde</small></div>
+      <div class="dur-opt" onclick="selectDur(120,this)">2<small>Stunden</small></div>
+      <div class="dur-opt" onclick="selectDur(240,this)">4<small>Stunden</small></div>
+    </div>
+    <div class="custom-dur">
+      <label>Eigene:</label>
+      <input type="number" id="ch" value="0" min="0" max="23" oninput="calcCustom()" />
+      <span>h</span>
+      <input type="number" id="cm" value="15" min="0" max="59" oninput="calcCustom()" />
+      <span>min</span>
+    </div>
+    <button class="btn-danger" onclick="confirmBlock()">Jetzt blockieren</button>
+    <button class="btn-secondary" onclick="goBack()">Zurück</button>`;
+}
+
+function goBack(){
+  const tl=getTodayLogs(currentApp.id);
+  showScreen1(tl.length, tl.length>=currentApp.maxOpens);
+}
+
+function selectDur(mins,el){
+  selectedMins=mins;
+  document.querySelectorAll('.dur-opt').forEach(e=>e.classList.remove('sel'));
+  el.classList.add('sel');
+  document.getElementById('ch').value=Math.floor(mins/60);
+  document.getElementById('cm').value=mins%60;
+}
+
+function calcCustom(){
+  const h=parseInt(document.getElementById('ch').value)||0;
+  const m=parseInt(document.getElementById('cm').value)||0;
+  selectedMins=Math.min(h*60+m, 23*60+59);
+  document.querySelectorAll('.dur-opt').forEach(e=>e.classList.remove('sel'));
+}
+
+function confirmOpen(){
+  logs.push({appId:currentApp.id,date:todayKey(),timestamp:Date.now(),blocked:false,blockDuration:0});
+  save(SK.LOGS,logs);
+  updateStreak();
+  const scheme=currentApp.scheme;
+  closeModal();
+  renderDashboard();
+  if(scheme){ setTimeout(()=>{ window.location.href=scheme; },100); }
+  else { alert('Öffne '+currentApp.name+' jetzt manuell.\n(Kein URL-Scheme hinterlegt)'); }
+}
+
+function confirmBlock(){
+  const mins=selectedMins||15;
+  logs.push({appId:currentApp.id,date:todayKey(),timestamp:Date.now(),blocked:true,blockDuration:mins});
+  save(SK.LOGS,logs);
+  updateStreak();
+  const h=Math.floor(mins/60), m=mins%60;
+  const dur=h>0?(m>0?h+'h '+m+'min':h+'h'):(m+' Minuten');
+  closeModal();
+  renderDashboard();
+  alert(currentApp.emoji+' '+currentApp.name+' blockiert für '+dur+'.\n\nGeh jetzt in:\nEinstellungen → Bildschirmzeit → App-Limits → "'+currentApp.name+'" → '+dur+' setzen.');
+}
+
+function closeModal(){ document.getElementById('main-modal').classList.remove('open'); currentApp=null; }
+
+function updateStreak(){
+  const today=todayKey();
+  if(streakData.lastDate!==today){ streakData={count:streakData.count+1,lastDate:today}; save(SK.STREAK,streakData); }
+}
+
+function triggerDemo(){
+  const active=apps.filter(a=>!a.whitelisted);
+  if(!active.length){ alert('Keine bewachten Apps.\nFüge eine App hinzu oder entferne sie von der Whitelist.'); return; }
+  openModal(active[Math.floor(Math.random()*active.length)]);
+}
+
+function copyUrl(url,btn){
+  navigator.clipboard.writeText(url).then(()=>{
+    btn.textContent='✓ Kopiert!';
+    setTimeout(()=>{ btn.textContent='📋 URL kopieren'; },2000);
+  }).catch(()=>{
+    const ta=document.createElement('textarea');
+    ta.value=url; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+    btn.textContent='✓ Kopiert!';
+    setTimeout(()=>{ btn.textContent='📋 URL kopieren'; },2000);
+  });
+}
+
+function switchTab(tab,btn){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  btn.classList.add('active');
+  if(tab==='apps') renderApps();
+  else if(tab==='shortcuts') renderShortcuts();
+  else renderDashboard();
+}
+
+// URL param trigger (from Shortcut)
+const p=new URLSearchParams(window.location.search);
+const urlApp=p.get('app');
+if(urlApp){
+  const found=apps.find(a=>a.id===urlApp);
+  if(found&&!found.whitelisted) setTimeout(()=>openModal(found),300);
+}
+
+document.getElementById('today-date').textContent=new Date().toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'});
+cleanLogs();
+renderDashboard();
+</script>
+</body>
+</html>
